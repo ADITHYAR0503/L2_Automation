@@ -1,0 +1,14 @@
+{
+  "report_name": "Internal Report",
+  "email_defaults": {
+    "from": "adithya.rajeev@accenture.com",
+    "to": "",
+    "cc": "",
+    "subject_format": "{report_date} - Monthly to date SLA Report - Internal Only"
+  },
+  "sla_limits_hours": {
+    "P1": 3,
+    "P2": 5,
+    "P3": 24
+  }
+}
