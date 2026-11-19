@@ -3,710 +3,481 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>L2 Automation // PRESTO Ops Command</title>
+  <title>L2 Automation // Created By Adithya</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
           colors: {
-            obsidian: '#060609',
-            carbon: '#0E0E14',
-            surface: '#14141F',
+            obsidian: '#09090B',
+            surface: '#12121A',
             royal: '#7C3AED',
-            violetGlow: '#A855F7',
+            violetglow: '#9333EA'
           }
         }
       }
-    }
+    };
   </script>
   <style>
     body {
-      background-color: #060609;
+      background-color: #09090B;
       color: #FFFFFF;
-      overflow-x: hidden;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-    .glass-panel {
-      background: linear-gradient(145deg, rgba(20, 20, 31, 0.85), rgba(11, 11, 17, 0.95));
-      border: 1px solid rgba(168, 85, 247, 0.18);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(12px);
+    .panel-card {
+      background: linear-gradient(180deg, rgba(22, 22, 34, 0.96) 0%, rgba(15, 15, 24, 0.98) 100%);
+      border: 1px solid rgba(124, 58, 237, 0.35);
     }
-    .purple-glow {
-      box-shadow: 0 0 25px rgba(124, 58, 237, 0.35);
+    .nav-active {
+      background: linear-gradient(90deg, #7C3AED 0%, #6D28D9 100%);
+      color: #FFFFFF;
     }
-    .purple-btn {
-      background: linear-gradient(135deg, #7C3AED 0%, #9333EA 100%);
-      transition: all 0.25s ease;
+    .nav-idle {
+      background: #14141F;
+      color: #D4D4D8;
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .purple-btn:hover {
-      background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%);
-      box-shadow: 0 0 20px rgba(168, 85, 247, 0.55);
-      transform: translateY(-1px);
+    .paste-zone:focus {
+      outline: 2px solid #9333EA;
+      background-color: rgba(124, 58, 237, 0.14);
     }
-    @keyframes pulseLine {
-      0% { transform: scaleX(0); opacity: 0.2; }
-      50% { transform: scaleX(1); opacity: 1; }
-      100% { transform: scaleX(1); opacity: 0; }
-    }
-    @keyframes fadeOutSplash {
-      0% { opacity: 1; visibility: visible; }
-      85% { opacity: 1; visibility: visible; }
-      100% { opacity: 0; visibility: hidden; pointer-events: none; }
-    }
-    .splash-screen {
-      animation: fadeOutSplash 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-    }
-    .loader-bar {
-      transform-origin: left;
-      animation: pulseLine 1.8s ease-in-out forwards;
-    }
-    .toast-enter {
-      animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    @keyframes slideInRight {
-      from { transform: translateX(120%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-    /* Custom scrollbar */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #060609; }
-    ::-webkit-scrollbar-thumb { background: #2E1065; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #7C3AED; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col selection:bg-purple-600 selection:text-white">
+<body class="min-h-screen bg-obsidian text-white">
 
-  <!-- CINEMATIC INTRO SPLASH -->
-  <div id="splash" class="splash-screen fixed inset-0 z-50 bg-obsidian flex flex-col items-center justify-center">
-    <div class="relative flex flex-col items-center">
-      <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-900 flex items-center justify-center mb-6 purple-glow border border-purple-400/30">
-        <span class="font-mono font-bold text-2xl tracking-tighter text-white">L2</span>
-      </div>
-      <h1 class="text-3xl md:text-4xl font-extrabold tracking-widest uppercase bg-clip-text text-transparent bg-gradient-to-r from-white via-purple-200 to-purple-500">
-        L2 AUTOMATION
-      </h1>
-      <p class="text-xs font-mono tracking-[0.35em] text-purple-400 mt-2 uppercase">
-        PRESTO Operational Command Suite
-      </p>
-      <div class="w-64 h-[2px] bg-white/10 mt-8 overflow-hidden rounded-full">
-        <div class="loader-bar w-full h-full bg-gradient-to-r from-purple-600 via-fuchsia-400 to-white"></div>
-      </div>
-      <p class="text-[11px] font-mono text-gray-500 mt-4 tracking-wider">
-        SYSTEM ARCHITECT &bull; <span class="text-white font-semibold">ADITHYA</span>
-      </p>
-    </div>
-  </div>
-
-  <!-- FLOATING NOTIFICATION CONTAINER (L2 ALERTS TOASTS) -->
-  <div id="toast-container" class="fixed bottom-6 right-6 z-40 flex flex-col gap-3 max-w-sm w-full pointer-events-none"></div>
-
-  <!-- TOP NAVIGATION HEADER -->
-  <header class="sticky top-0 z-30 border-b border-purple-500/20 bg-obsidian/90 backdrop-blur-xl">
-    <div class="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
-      <!-- Brand -->
-      <div class="flex items-center gap-4">
-        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-600 to-purple-950 border border-purple-400/40 flex items-center justify-center shadow-lg shadow-purple-900/40">
-          <span class="font-mono font-bold text-sm text-white">L2</span>
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <span class="font-bold tracking-wider text-base text-white">L2 AUTOMATION</span>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30">v1.0</span>
-          </div>
-          <p class="text-[11px] text-gray-400 tracking-wide">PRESTO &bull; GO Transit &bull; Metrolinx Operations</p>
-        </div>
+  <header class="border-b border-purple-500/30 bg-[#0D0D14] sticky top-0 z-30">
+    <div class="max-w-[1480px] mx-auto px-5 py-3 flex flex-wrap items-center justify-between gap-4">
+      <div class="font-bold tracking-wide text-base sm:text-lg text-white">
+        L2 Automation // Created By Adithya
       </div>
 
-      <!-- 3 Core Module Tabs -->
-      <nav class="flex items-center gap-2 bg-carbon p-1.5 rounded-xl border border-white/10">
-        <button onclick="switchTab('pcm')" id="tab-pcm" class="nav-tab px-4 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all bg-purple-600 text-white shadow-lg shadow-purple-600/30">
-          PCM REPORTS
-        </button>
-        <button onclick="switchTab('alerts')" id="tab-alerts" class="nav-tab px-4 py-2 rounded-lg text-xs font-semibold tracking-wide text-gray-400 hover:text-white transition-all flex items-center gap-2">
-          <span>PRESTO OPS L2 ALERTS</span>
-          <span id="alert-badge" class="px-1.5 py-0.2 text-[10px] font-mono rounded-full bg-red-500/20 text-red-400 border border-red-500/40">4</span>
-        </button>
-        <button onclick="switchTab('soti')" id="tab-soti" class="nav-tab px-4 py-2 rounded-lg text-xs font-semibold tracking-wide text-gray-400 hover:text-white transition-all flex items-center gap-2">
-          <span>SYSTEM HEALTH (SOTI)</span>
-          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-        </button>
+      <nav class="flex flex-wrap items-center gap-2">
+        <button id="tab-pcm" onclick="switchMainTab('pcm')" class="nav-idle px-3.5 py-2 rounded-lg text-xs font-semibold">PCM Reports</button>
+        <button id="tab-health" onclick="switchMainTab('health')" class="nav-idle px-3.5 py-2 rounded-lg text-xs font-semibold">System Health</button>
+        <button id="tab-dr2" onclick="switchMainTab('dr2')" class="nav-active px-3.5 py-2 rounded-lg text-xs font-semibold">DR2 Reports</button>
+        <button id="tab-alerts" onclick="switchMainTab('alerts')" class="nav-idle px-3.5 py-2 rounded-lg text-xs font-semibold">L2 Alerts</button>
       </nav>
-
-      <!-- Live Telemetry & Creator Credit -->
-      <div class="hidden lg:flex items-center gap-5">
-        <div class="text-right">
-          <div class="flex items-center justify-end gap-2">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span id="live-clock" class="font-mono text-xs text-gray-300">18:52:00 ET</span>
-          </div>
-          <p class="text-[10px] font-mono text-purple-400/90 mt-0.5">Created by Adithya</p>
-        </div>
-      </div>
     </div>
   </header>
 
-  <!-- MAIN WORKSPACE CONTAINER -->
-  <main class="flex-1 max-w-[1600px] w-full mx-auto px-6 py-6">
+  <main class="max-w-[1480px] mx-auto px-5 py-5 space-y-4">
 
-    <!-- ========================================================= -->
-    <!-- SECTION 1: PCM REPORTS                                    -->
-    <!-- ========================================================= -->
-    <section id="view-pcm" class="space-y-6">
-      <!-- Control Bar -->
-      <div class="glass-panel rounded-2xl p-5 flex flex-wrap items-end justify-between gap-4">
-        <div class="flex flex-wrap items-end gap-4">
-          <!-- Report Selector -->
-          <div>
-            <label class="block text-[11px] font-mono uppercase tracking-wider text-purple-300 mb-1.5">Report Type</label>
-            <select id="report-type" onchange="updateSubjectPreview()" class="bg-obsidian border border-purple-500/30 text-white text-sm rounded-xl px-4 py-2.5 min-w-[260px] focus:outline-none focus:border-purple-400">
-              <option value="Internal Report" selected>Internal Report</option>
-              <option value="Device Type Report">Device Type Report</option>
-              <option value="External Report">External Report</option>
-              <option value="Daily ECLRT Report">Daily ECLRT Report</option>
-              <option value="Weekly 905 & TTC Report">Weekly 905 &amp; TTC Report</option>
-              <option value="Weekly RTL Report">Weekly RTL Report</option>
-              <option value="Weekly ECLRT PCM Report">Weekly ECLRT PCM Report</option>
-            </select>
-          </div>
+    <!-- DR2 REPORTS SECTION -->
+    <section id="section-dr2" class="space-y-4">
 
-          <!-- Date Picker -->
-          <div>
-            <label class="block text-[11px] font-mono uppercase tracking-wider text-purple-300 mb-1.5">Report Date</label>
-            <input type="date" id="report-date" value="2026-11-16" onchange="updateSubjectPreview()" class="bg-obsidian border border-purple-500/30 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-purple-400" />
-          </div>
-
-          <!-- Input Excel Dropzone Trigger -->
-          <div>
-            <label class="block text-[11px] font-mono uppercase tracking-wider text-purple-300 mb-1.5">Input Excel Files</label>
-            <label class="cursor-pointer bg-obsidian hover:bg-purple-950/30 border border-dashed border-purple-500/50 text-gray-300 text-xs rounded-xl px-4 py-2.5 flex items-center gap-2 transition">
-              <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-              <span id="file-label">Drop or Select ServiceNow / SLA Excels</span>
-              <input type="file" multiple accept=".xlsx,.xls,.csv" class="hidden" onchange="handleFiles(this.files)" />
-            </label>
-          </div>
+      <!-- Sub-Report Selector -->
+      <div class="panel-card rounded-xl p-3 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap gap-2">
+          <button onclick="selectDr2Sub('device_stuck')" id="dr2sub-device_stuck" class="px-3 py-1.5 rounded-md text-xs font-semibold bg-royal text-white">Device Stuck</button>
+          <button onclick="selectDr2Sub('app_crash')" id="dr2sub-app_crash" class="px-3 py-1.5 rounded-md text-xs font-medium bg-[#1B1B29] text-zinc-300 border border-white/10">App Crash</button>
+          <button onclick="selectDr2Sub('dr2_bftp')" id="dr2sub-dr2_bftp" class="px-3 py-1.5 rounded-md text-xs font-medium bg-[#1B1B29] text-zinc-300 border border-white/10">DR2 BFTP</button>
+          <button onclick="selectDr2Sub('dr2_dcu')" id="dr2sub-dr2_dcu" class="px-3 py-1.5 rounded-md text-xs font-medium bg-[#1B1B29] text-zinc-300 border border-white/10">DR2 DCU</button>
+          <button onclick="selectDr2Sub('dr2_sftp')" id="dr2sub-dr2_sftp" class="px-3 py-1.5 rounded-md text-xs font-medium bg-[#1B1B29] text-zinc-300 border border-white/10">DR2 SFTP</button>
+          <button onclick="selectDr2Sub('dr2_mftp')" id="dr2sub-dr2_mftp" class="px-3 py-1.5 rounded-md text-xs font-medium bg-[#1B1B29] text-zinc-300 border border-white/10">DR2 MFTP</button>
+          <button onclick="selectDr2Sub('dr2_mpos')" id="dr2sub-dr2_mpos" class="px-3 py-1.5 rounded-md text-xs font-medium bg-[#1B1B29] text-zinc-300 border border-white/10">DR2 MPOS</button>
+          <button onclick="selectDr2Sub('dr2_spos')" id="dr2sub-dr2_spos" class="px-3 py-1.5 rounded-md text-xs font-medium bg-[#1B1B29] text-zinc-300 border border-white/10">DR2 SPOS</button>
+          <button onclick="selectDr2Sub('dr2_tpt')" id="dr2sub-dr2_tpt" class="px-3 py-1.5 rounded-md text-xs font-medium bg-[#1B1B29] text-zinc-300 border border-white/10">DR2 TPT</button>
+          <button onclick="selectDr2Sub('hhpos_insp')" id="dr2sub-hhpos_insp" class="px-3 py-1.5 rounded-md text-xs font-medium bg-[#1B1B29] text-zinc-300 border border-white/10">HHPOS &amp; Inspection</button>
+          <button onclick="selectDr2Sub('sa_tool')" id="dr2sub-sa_tool" class="px-3 py-1.5 rounded-md text-xs font-medium bg-[#1B1B29] text-zinc-300 border border-white/10">SA Tool</button>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="flex items-center gap-3">
-          <button onclick="generateValues()" class="purple-btn text-white text-xs font-semibold px-5 py-2.5 rounded-xl flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            Generate Report
-          </button>
-
-          <button onclick="resetValues()" class="bg-obsidian hover:bg-white/5 border border-white/15 text-gray-300 text-xs font-semibold px-4 py-2.5 rounded-xl transition">
-            Refresh
-          </button>
-
-          <button onclick="downloadEML()" class="bg-white text-obsidian hover:bg-purple-100 text-xs font-bold px-5 py-2.5 rounded-xl flex items-center gap-2 shadow-lg transition">
-            <svg class="w-4 h-4 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-            Draft Report Email (.eml)
-          </button>
-        </div>
+        <select id="sotiEnv" onchange="renderStuckTable()" class="rounded-lg bg-[#0D0D14] border border-purple-500/40 px-2.5 py-1.5 text-xs text-white">
+          <option value="Production" selected>SOTI: Production</option>
+          <option value="CTT">SOTI: CTT</option>
+          <option value="Preprod">SOTI: Preprod</option>
+        </select>
       </div>
 
-      <!-- Email Metadata Config Strip -->
-      <div class="glass-panel rounded-2xl p-4 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-        <div>
-          <span class="text-[10px] font-mono uppercase text-gray-400 block">From</span>
-          <input type="text" id="mail-from" value="adithya.rajeev@accenture.com" readonly class="w-full bg-transparent text-xs font-mono text-purple-300 mt-0.5 focus:outline-none" />
-        </div>
-        <div>
-          <span class="text-[10px] font-mono uppercase text-gray-400 block">To (Editable)</span>
-          <input type="text" id="mail-to" placeholder="Enter recipients..." value="Vigneswaran, Pratheeba; Archibald, Doug" class="w-full bg-obsidian/80 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white mt-0.5 focus:border-purple-500 focus:outline-none" />
-        </div>
-        <div>
-          <span class="text-[10px] font-mono uppercase text-gray-400 block">CC (Blank by Default)</span>
-          <input type="text" id="mail-cc" placeholder="Leave blank or add CC..." value="" class="w-full bg-obsidian/80 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white mt-0.5 focus:border-purple-500 focus:outline-none" />
-        </div>
-        <div>
-          <span class="text-[10px] font-mono uppercase text-gray-400 block">Generated Subject</span>
-          <input type="text" id="mail-subject" value="November 16th, 2026 - Monthly to date SLA Report - Internal Only" class="w-full bg-obsidian/80 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white mt-0.5 focus:border-purple-500 focus:outline-none" />
-        </div>
+      <div id="dr2StagedBanner" class="hidden panel-card rounded-xl p-5">
+        <div id="stagedTitle" class="text-sm font-bold text-purple-200"></div>
       </div>
 
-      <!-- KPI Summary Cards (905 Region & TTC) -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- 905 Region Card -->
-        <div class="glass-panel rounded-2xl p-5">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xs font-mono uppercase tracking-widest text-purple-400 font-bold">905 Transit Agencies</h2>
-            <span class="text-[11px] font-mono text-gray-400">MTD SLA Summary</span>
+      <!-- DEVICE STUCK -->
+      <div id="deviceStuckPanel" class="space-y-4">
+
+        <div class="panel-card rounded-xl p-4 space-y-3">
+          <h1 class="text-base font-bold text-white">Device Stuck</h1>
+
+          <!-- Fetch Mail Bar -->
+          <div class="flex flex-wrap items-center gap-2">
+            <input id="mailTitleInput" type="text"
+              placeholder="Paste mail subject or title"
+              class="flex-1 min-w-[280px] rounded-lg bg-[#0B0B11] border border-purple-500/40 focus:border-purple-400 focus:outline-none px-3 py-2 text-xs text-white" />
+            <button id="btnFetchMail" onclick="fetchMailByTitle()"
+              class="px-4 py-2 rounded-lg text-xs font-bold bg-royal hover:bg-violetglow text-white">
+              Fetch
+            </button>
+            <button type="button" onclick="loadSampleRows()"
+              class="px-3 py-2 rounded-lg text-xs font-medium bg-[#1B1B29] text-zinc-300 border border-white/10 hover:border-purple-400/50">
+              Sample
+            </button>
           </div>
-          <div class="grid grid-cols-4 gap-3">
-            <div class="bg-obsidian/90 border border-purple-500/20 rounded-xl p-3 text-center">
-              <span class="text-[10px] font-mono text-gray-400 uppercase">Total</span>
-              <p id="kpi-905-total" class="text-2xl font-extrabold text-white mt-1">488</p>
+          <div id="fetchStatusText" class="text-xs text-purple-300"></div>
+        </div>
+
+        <!-- Table + Side Quick Comments -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+
+          <!-- Main Table (9 cols) -->
+          <div class="xl:col-span-9 panel-card rounded-xl p-4 overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-[#1B1B2B] text-purple-200 border-b border-purple-500/30">
+                  <th class="p-2.5">Device Name</th>
+                  <th class="p-2.5 text-center">Status</th>
+                  <th class="p-2.5">Online Duration</th>
+                  <th class="p-2.5">SOTI Link</th>
+                  <th class="p-2.5 min-w-[190px]">Screen Shot (Optional)</th>
+                  <th class="p-2.5 min-w-[260px]">Comments</th>
+                </tr>
+              </thead>
+              <tbody id="stuckTableBody" class="divide-y divide-white/10 bg-[#0D0D14]"></tbody>
+            </table>
+          </div>
+
+          <!-- Side Quick Comment Buttons (3 cols) -->
+          <div class="xl:col-span-3 panel-card rounded-xl p-4 space-y-2">
+            <div class="text-xs font-bold text-purple-200">Quick Comments</div>
+            <div id="quickCommentButtons" class="flex flex-col gap-2"></div>
+          </div>
+
+        </div>
+
+        <!-- Reply Mail Section -->
+        <div class="panel-card rounded-xl p-4 space-y-3">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-[11px] text-zinc-400 mb-1">From</label>
+              <input id="emlFrom" type="text" value="adithya.rajeev@accenture.com"
+                class="w-full rounded-lg bg-[#0B0B11] border border-white/15 px-3 py-2 text-xs text-white" />
             </div>
-            <div class="bg-obsidian/90 border border-emerald-500/20 rounded-xl p-3 text-center">
-              <span class="text-[10px] font-mono text-emerald-400 uppercase">Closed</span>
-              <p id="kpi-905-closed" class="text-2xl font-extrabold text-emerald-400 mt-1">471</p>
+            <div>
+              <label class="block text-[11px] text-zinc-400 mb-1">To (Editable)</label>
+              <input id="emlTo" type="text" value="Presto.PDS.OpsL2Team@accenture.com"
+                class="w-full rounded-lg bg-[#0B0B11] border border-white/15 px-3 py-2 text-xs text-white" />
             </div>
-            <div class="bg-obsidian/90 border border-amber-500/20 rounded-xl p-3 text-center">
-              <span class="text-[10px] font-mono text-amber-400 uppercase">On Hold</span>
-              <p id="kpi-905-hold" class="text-2xl font-extrabold text-amber-400 mt-1">13</p>
+            <div>
+              <label class="block text-[11px] text-zinc-400 mb-1">CC (Optional)</label>
+              <input id="emlCc" type="text" placeholder="Leave blank or add CC..."
+                class="w-full rounded-lg bg-[#0B0B11] border border-white/15 px-3 py-2 text-xs text-white" />
             </div>
-            <div class="bg-obsidian/90 border border-purple-500/20 rounded-xl p-3 text-center">
-              <span class="text-[10px] font-mono text-purple-300 uppercase">New / Open</span>
-              <p id="kpi-905-new" class="text-2xl font-extrabold text-purple-300 mt-1">4</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+            <div class="md:col-span-2">
+              <label class="block text-[11px] text-zinc-400 mb-1">Subject</label>
+              <input id="emlSubject" type="text" value=""
+                class="w-full rounded-lg bg-[#0B0B11] border border-white/15 px-3 py-2 text-xs text-white" />
             </div>
+            <div>
+              <label class="block text-[11px] text-zinc-400 mb-1">Thanks &amp; Regards</label>
+              <input id="emlRegards" type="text" value="Adithya"
+                class="w-full rounded-lg bg-[#0B0B11] border border-white/15 px-3 py-2 text-xs text-white" />
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+            <div id="generateStatusText" class="text-xs text-purple-200"></div>
+            <button id="btnGenerateMail" onclick="generateMail()"
+              class="px-5 py-2.5 rounded-lg text-xs font-bold bg-royal hover:bg-violetglow text-white">
+              Generate Mail
+            </button>
           </div>
         </div>
 
-        <!-- TTC Card -->
-        <div class="glass-panel rounded-2xl p-5">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xs font-mono uppercase tracking-widest text-purple-400 font-bold">TTC Region</h2>
-            <span class="text-[11px] font-mono text-gray-400">MTD SLA Summary</span>
-          </div>
-          <div class="grid grid-cols-4 gap-3">
-            <div class="bg-obsidian/90 border border-purple-500/20 rounded-xl p-3 text-center">
-              <span class="text-[10px] font-mono text-gray-400 uppercase">Total</span>
-              <p id="kpi-ttc-total" class="text-2xl font-extrabold text-white mt-1">237</p>
-            </div>
-            <div class="bg-obsidian/90 border border-emerald-500/20 rounded-xl p-3 text-center">
-              <span class="text-[10px] font-mono text-emerald-400 uppercase">Closed</span>
-              <p id="kpi-ttc-closed" class="text-2xl font-extrabold text-emerald-400 mt-1">221</p>
-            </div>
-            <div class="bg-obsidian/90 border border-amber-500/20 rounded-xl p-3 text-center">
-              <span class="text-[10px] font-mono text-amber-400 uppercase">On Hold</span>
-              <p id="kpi-ttc-hold" class="text-2xl font-extrabold text-amber-400 mt-1">7</p>
-            </div>
-            <div class="bg-obsidian/90 border border-purple-500/20 rounded-xl p-3 text-center">
-              <span class="text-[10px] font-mono text-purple-300 uppercase">Open / Class 2</span>
-              <p id="kpi-ttc-new" class="text-2xl font-extrabold text-purple-300 mt-1">9</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Live Tables & MTTR Chart Preview -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <!-- SLA & Effort Tables (7 cols) -->
-        <div class="lg:col-span-7 glass-panel rounded-2xl p-6 space-y-6">
-          <div class="flex items-center justify-between border-b border-white/10 pb-3">
-            <h3 class="text-sm font-bold text-white">Generated Report Preview (Outlook HTML Output)</h3>
-            <span class="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-500/30">Ready for .EML Export</span>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <!-- TTC SLA Breakdown -->
-            <div class="bg-obsidian rounded-xl p-4 border border-white/10">
-              <h4 class="text-xs font-mono uppercase text-purple-400 mb-3">TTC — P1 / P2 / P3 SLA Adherence</h4>
-              <table class="w-full text-xs text-left">
-                <thead>
-                  <tr class="border-b border-white/10 text-gray-400">
-                    <th class="py-1.5">Priority / Bucket</th>
-                    <th class="py-1.5 text-right">Count</th>
-                    <th class="py-1.5 text-right">Breach</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-white/5 font-mono">
-                  <tr><td class="py-1.5 text-white">P1 (&lt;3 hrs)</td><td class="py-1.5 text-right text-emerald-400">56</td><td class="py-1.5 text-right">0</td></tr>
-                  <tr><td class="py-1.5 text-gray-400">P1 (Timer Paused)</td><td class="py-1.5 text-right">1</td><td class="py-1.5 text-right">-</td></tr>
-                  <tr><td class="py-1.5 text-white">P2 (&lt;5 hrs)</td><td class="py-1.5 text-right text-emerald-400">128</td><td class="py-1.5 text-right">0</td></tr>
-                  <tr><td class="py-1.5 text-gray-400">P2 (Timer Paused)</td><td class="py-1.5 text-right">11</td><td class="py-1.5 text-right">-</td></tr>
-                  <tr><td class="py-1.5 text-white">P3 (&lt;24 hrs)</td><td class="py-1.5 text-right text-emerald-400">37</td><td class="py-1.5 text-right">0</td></tr>
-                </tbody>
-              </table>
-            </div>
-
-            <!-- 905 SLA Breakdown -->
-            <div class="bg-obsidian rounded-xl p-4 border border-white/10">
-              <h4 class="text-xs font-mono uppercase text-purple-400 mb-3">905 — P1 / P2 / P3 SLA Adherence</h4>
-              <table class="w-full text-xs text-left">
-                <thead>
-                  <tr class="border-b border-white/10 text-gray-400">
-                    <th class="py-1.5">Priority / Bucket</th>
-                    <th class="py-1.5 text-right">Count</th>
-                    <th class="py-1.5 text-right">Breach</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-white/5 font-mono">
-                  <tr><td class="py-1.5 text-white">P1 (&lt;3 hrs)</td><td class="py-1.5 text-right text-emerald-400">237</td><td class="py-1.5 text-right">0</td></tr>
-                  <tr><td class="py-1.5 text-gray-400">P1 (Timer Paused)</td><td class="py-1.5 text-right">5</td><td class="py-1.5 text-right">-</td></tr>
-                  <tr><td class="py-1.5 text-white">P2 (&lt;5 hrs)</td><td class="py-1.5 text-right text-emerald-400">227</td><td class="py-1.5 text-right">0</td></tr>
-                  <tr><td class="py-1.5 text-gray-400">P2 (Timer Paused)</td><td class="py-1.5 text-right">10</td><td class="py-1.5 text-right">-</td></tr>
-                  <tr><td class="py-1.5 text-white">P3 (&lt;24 hrs)</td><td class="py-1.5 text-right text-emerald-400">7</td><td class="py-1.5 text-right">0</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Manual vs Automated Summary -->
-          <div class="bg-obsidian rounded-xl p-4 border border-white/10">
-            <h4 class="text-xs font-mono uppercase text-purple-400 mb-3">Manual vs. Automated Effort (Closed Incidents)</h4>
-            <div class="grid grid-cols-2 gap-4 text-xs">
-              <div class="p-3 rounded-lg bg-surface border border-white/5 flex justify-between items-center">
-                <span class="text-gray-300">Manual Effort (Onsite) — TTC / 905</span>
-                <span class="font-mono font-bold text-white">128 / 192</span>
-              </div>
-              <div class="p-3 rounded-lg bg-surface border border-purple-500/20 flex justify-between items-center">
-                <span class="text-purple-200">No Onsite Effort Required — TTC / 905</span>
-                <span class="font-mono font-bold text-purple-400">93 / 279</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- MTTR Chart (5 cols) -->
-        <div class="lg:col-span-5 glass-panel rounded-2xl p-6 flex flex-col justify-between">
-          <div>
-            <h3 class="text-sm font-bold text-white">Mean Time Taken to Resolve (MTTR)</h3>
-            <p class="text-xs text-gray-400 mt-0.5">P1 &amp; P2 Incidents by Device Type (Hours)</p>
-          </div>
-          <div class="my-4 h-64">
-            <canvas id="mttrChart"></canvas>
-          </div>
-          <div class="text-[11px] font-mono text-gray-400 border-t border-white/10 pt-3 flex justify-between">
-            <span>Sign-off: Thanks &amp; Regards, PCM.PRESTO</span>
-            <span class="text-purple-400">Format: HTML + Embedded PNG</span>
-          </div>
-        </div>
       </div>
     </section>
 
-    <!-- ========================================================= -->
-    <!-- SECTION 2: PRESTO OPS L2 ALERTS                           -->
-    <!-- ========================================================= -->
-    <section id="view-alerts" class="hidden space-y-6">
-      <div class="glass-panel rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 class="text-lg font-bold text-white tracking-wide">PRESTO OPS L2 ALERTS</h2>
-          <p class="text-xs text-gray-400">Real-time incident &amp; infrastructure triggers from Outlook, ServiceNow &amp; SOTI</p>
-        </div>
-        <button onclick="triggerDemoAlert()" class="purple-btn text-white text-xs font-semibold px-4 py-2.5 rounded-xl flex items-center gap-2">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-          Test Floating Notification
-        </button>
-      </div>
-
-      <div id="alerts-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <!-- Alert 1: SQL Job Failure -->
-        <div class="glass-panel rounded-2xl p-5 border-l-4 border-l-red-500 space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="px-2.5 py-1 rounded-md text-[10px] font-mono font-bold uppercase bg-red-500/20 text-red-400 border border-red-500/30">CRITICAL — SQL JOB FAILURE</span>
-            <span class="text-xs font-mono text-gray-400">17 Nov 2026, 06:15 PM</span>
-          </div>
-          <div class="grid grid-cols-2 gap-2 text-xs font-mono bg-obsidian p-3 rounded-xl border border-white/5">
-            <div><span class="text-gray-500 block">Instance</span><span class="text-white">PRX1DPDBV01\PDS_INSTANCE_1</span></div>
-            <div><span class="text-gray-500 block">Job</span><span class="text-purple-300">TapEventStagingTransactionProcess</span></div>
-            <div><span class="text-gray-500 block">Status</span><span class="text-red-400 font-bold">FAILED (2 Consecutive)</span></div>
-            <div><span class="text-gray-500 block">Last Run</span><span class="text-gray-300">11/17/2026 074000</span></div>
-          </div>
-          <p class="text-xs text-gray-400">This job has failed on consecutive runs. Please investigate and escalate if unresolved.</p>
-        </div>
-
-        <!-- Alert 2: ServiceNow Incident -->
-        <div class="glass-panel rounded-2xl p-5 border-l-4 border-l-amber-400 space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="px-2.5 py-1 rounded-md text-[10px] font-mono font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">SERVICENOW INCIDENT</span>
-            <span class="text-xs font-mono text-gray-400">17 Nov 2026, 06:42 PM</span>
-          </div>
-          <div class="grid grid-cols-2 gap-2 text-xs font-mono bg-obsidian p-3 rounded-xl border border-white/5">
-            <div><span class="text-gray-500 block">Incident</span><span class="text-white font-bold">INC8290545</span></div>
-            <div><span class="text-gray-500 block">Caller</span><span class="text-purple-300">Shoppers Generic User</span></div>
-            <div><span class="text-gray-500 block">Device</span><span class="text-gray-300">N/A</span></div>
-            <div><span class="text-gray-500 block">Queue</span><span class="text-amber-300">PRESTO L2 Operations</span></div>
-          </div>
-          <p class="text-xs text-gray-400">Please review and action this incident in the ServiceNow queue.</p>
-        </div>
-
-        <!-- Alert 3: Multiple Station Outage -->
-        <div class="glass-panel rounded-2xl p-5 border-l-4 border-l-red-500 space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="px-2.5 py-1 rounded-md text-[10px] font-mono font-bold uppercase bg-red-500/20 text-red-400 border border-red-500/30">MULTIPLE STATION OUTAGE ALERT</span>
-            <span class="text-xs font-mono text-gray-400">17 Nov 2026, 03:00 PM IST</span>
-          </div>
-          <div class="bg-obsidian p-4 rounded-xl border border-white/5 flex items-center justify-between">
-            <div>
-              <span class="text-xs text-gray-400 block">Stations Offline (&gt;15 mins)</span>
-              <span class="text-xs text-gray-500">Monitoring until recovery</span>
-            </div>
-            <span class="text-3xl font-extrabold font-mono text-red-400">8 <span class="text-xs font-normal text-gray-400">stations</span></span>
-          </div>
-        </div>
-
-        <!-- Alert 4: Device AppCrash Monitoring -->
-        <div class="glass-panel rounded-2xl p-5 border-l-4 border-l-purple-500 space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="px-2.5 py-1 rounded-md text-[10px] font-mono font-bold uppercase bg-purple-500/20 text-purple-300 border border-purple-500/30">DEVICE APPCRASH MONITORING</span>
-            <span class="text-xs font-mono text-gray-400">17 Nov 2026, 03:03 PM</span>
-          </div>
-          <div class="grid grid-cols-2 gap-3 bg-obsidian p-3 rounded-xl border border-white/5 text-center font-mono">
-            <div>
-              <span class="text-[10px] text-gray-400 uppercase block">App Crash</span>
-              <span class="text-2xl font-bold text-red-400">2</span>
-            </div>
-            <div>
-              <span class="text-[10px] text-gray-400 uppercase block">Screen Struck</span>
-              <span class="text-2xl font-bold text-emerald-400">0</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ========================================================= -->
-    <!-- SECTION 3: SYSTEM HEALTH (SOTI)                           -->
-    <!-- ========================================================= -->
-    <section id="view-soti" class="hidden space-y-6">
-      <div class="glass-panel rounded-2xl p-6">
-        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4 mb-6">
-          <div>
-            <div class="flex items-center gap-2.5">
-              <h2 class="text-lg font-bold text-white tracking-wider uppercase">SYSTEM HEALTH</h2>
-              <span class="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">SOTI MobiControl &gt; System Settings &gt; System Health</span>
-            </div>
-            <p class="text-xs text-gray-400 mt-1">Deployment Servers Telemetry &bull; Live Device Connections &amp; Queue Depth</p>
-          </div>
-          <div class="text-right font-mono text-xs">
-            <span class="text-gray-400">Total Connected Devices: </span>
-            <span class="text-white font-bold text-sm">14,090</span>
-          </div>
-        </div>
-
-        <!-- Deployment Servers Table -->
-        <div class="overflow-x-auto rounded-xl border border-purple-500/20">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-obsidian text-[11px] font-mono uppercase tracking-wider text-purple-300 border-b border-purple-500/20">
-                <th class="py-3.5 px-5">Status</th>
-                <th class="py-3.5 px-5">Host Name</th>
-                <th class="py-3.5 px-5 text-right">Devices Connected</th>
-                <th class="py-3.5 px-5 text-right">Queue Length</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-white/5 font-mono text-sm bg-surface/40">
-              <tr class="hover:bg-purple-950/20 transition">
-                <td class="py-4 px-5"><span class="inline-flex items-center gap-1.5 text-xs text-amber-400"><span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Elevated Queue</span></td>
-                <td class="py-4 px-5 text-white font-semibold">PRX1DPDM11.prestoprod.net</td>
-                <td class="py-4 px-5 text-right text-gray-200">3,535</td>
-                <td class="py-4 px-5 text-right font-bold text-amber-400">538</td>
-              </tr>
-              <tr class="hover:bg-purple-950/20 transition">
-                <td class="py-4 px-5"><span class="inline-flex items-center gap-1.5 text-xs text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Healthy</span></td>
-                <td class="py-4 px-5 text-white font-semibold">PRX1DPDM12.prestoprod.net</td>
-                <td class="py-4 px-5 text-right text-gray-200">3,242</td>
-                <td class="py-4 px-5 text-right text-emerald-400">0</td>
-              </tr>
-              <tr class="hover:bg-purple-950/20 transition">
-                <td class="py-4 px-5"><span class="inline-flex items-center gap-1.5 text-xs text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Healthy</span></td>
-                <td class="py-4 px-5 text-white font-semibold">PRX1DPDM13.prestoprod.net</td>
-                <td class="py-4 px-5 text-right text-gray-200">3,700</td>
-                <td class="py-4 px-5 text-right text-emerald-400">0</td>
-              </tr>
-              <tr class="hover:bg-purple-950/20 transition">
-                <td class="py-4 px-5"><span class="inline-flex items-center gap-1.5 text-xs text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Healthy</span></td>
-                <td class="py-4 px-5 text-white font-semibold">PRX1DPDM14.prestoprod.net</td>
-                <td class="py-4 px-5 text-right text-gray-200">3,613</td>
-                <td class="py-4 px-5 text-right text-emerald-400">0</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+    <section id="section-pcm" class="hidden panel-card rounded-xl p-6 text-xs text-zinc-300">PCM Reports</section>
+    <section id="section-health" class="hidden panel-card rounded-xl p-6 text-xs text-zinc-300">System Health</section>
+    <section id="section-alerts" class="hidden panel-card rounded-xl p-6 text-xs text-zinc-300">L2 Alerts</section>
 
   </main>
 
-  <!-- FOOTER -->
-  <footer class="border-t border-white/10 py-4 px-6 text-center md:text-left">
-    <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row items-center justify-between text-[11px] font-mono text-gray-500">
-      <span>L2 AUTOMATION // PRESTO OPERATIONAL COMMAND</span>
-      <span>DESIGNED &amp; ENGINEERED BY <strong class="text-purple-400">ADITHYA</strong></span>
-    </div>
-  </footer>
-
   <script>
-    // Live Clock
-    setInterval(() => {
-      const now = new Date();
-      document.getElementById('live-clock').innerText = now.toTimeString().split(' ')[0] + ' ET';
-    }, 1000);
+    const QUICK_COMMENTS = [
+      "DCU is in Print Screen, Hence BFTP Android Status 4",
+      "DCU is not On Route, Hence BFTP Android Status 4",
+      "Both DCU and BFTP Offline in SOTI",
+      "DCU Offline in SOTI",
+      "DCU is in Login Screen",
+      "BFTP Device Recovered, Android Status 1 and in Tap Screen",
+      "DCU is in Choose Mode Screen"
+    ];
 
-    // Tab Navigation
-    function switchTab(tabId) {
-      ['pcm', 'alerts', 'soti'].forEach(id => {
-        document.getElementById('view-' + id).classList.add('hidden');
-        const btn = document.getElementById('tab-' + id);
-        btn.classList.remove('bg-purple-600', 'text-white', 'shadow-lg', 'shadow-purple-600/30');
-        btn.classList.add('text-gray-400');
+    let currentRows = [];
+    let activeCommentRowIdx = null;
+    let fetchedEntryId = "";
+    let fetchedStoreId = "";
+    // rowIndex -> { file, previewUrl, deviceLabel }
+    const rowScreenshots = new Map();
+
+    function switchMainTab(tab) {
+      ["pcm", "health", "dr2", "alerts"].forEach(k => {
+        document.getElementById(`section-${k}`).classList.toggle("hidden", k !== tab);
+        document.getElementById(`tab-${k}`).className = k === tab
+          ? "nav-active px-3.5 py-2 rounded-lg text-xs font-semibold"
+          : "nav-idle px-3.5 py-2 rounded-lg text-xs font-semibold";
       });
-      document.getElementById('view-' + tabId).classList.remove('hidden');
-      const activeBtn = document.getElementById('tab-' + tabId);
-      activeBtn.classList.add('bg-purple-600', 'text-white', 'shadow-lg', 'shadow-purple-600/30');
-      activeBtn.classList.remove('text-gray-400');
     }
 
-    // Floating Toast Notification Engine
-    function showToast(title, message, level = 'critical') {
-      const container = document.getElementById('toast-container');
-      const borderCol = level === 'critical' ? 'border-red-500' : 'border-purple-500';
-      const badgeCol = level === 'critical' ? 'bg-red-500/20 text-red-400' : 'bg-purple-500/20 text-purple-300';
-
-      const toast = document.createElement('div');
-      toast.className = `toast-enter pointer-events-auto glass-panel rounded-xl p-4 border-l-4 ${borderCol} shadow-2xl`;
-      toast.innerHTML = `
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded ${badgeCol}">${title}</span>
-          <button onclick="this.parentElement.parentElement.remove()" class="text-gray-400 hover:text-white text-xs">&times;</button>
-        </div>
-        <p class="text-xs text-white font-medium mt-1">${message}</p>
-        <span class="text-[10px] font-mono text-gray-400 block mt-1">Just now &bull; PRESTO Ops L2 Alerts</span>
-      `;
-      container.appendChild(toast);
-      setTimeout(() => { if (toast.parentElement) toast.remove(); }, 7000);
-    }
-
-    function triggerDemoAlert() {
-      showToast('SERVICENOW INCIDENT', 'New P2 Incident INC8290612 assigned to PRESTO L2 Operations.', 'critical');
-    }
-
-    // Trigger initial subtle alert toast after splash screen finishes
-    setTimeout(() => {
-      showToast('SOTI HEALTH NOTICE', 'PRX1DPDM11.prestoprod.net queue length at 538 devices.', 'info');
-    }, 2800);
-
-    // Update Email Subject Dynamically
-    function updateSubjectPreview() {
-      const rType = document.getElementById('report-type').value;
-      const rDate = document.getElementById('report-date').value;
-      const subjectInput = document.getElementById('mail-subject');
-      if (rType === 'Internal Report') {
-        subjectInput.value = `${rDate} - Monthly to date SLA Report - Internal Only`;
-      } else {
-        subjectInput.value = `${rDate} - ${rType} - PRESTO L2 Operations`;
+    function selectDr2Sub(sub) {
+      const subs = ["device_stuck", "app_crash", "dr2_bftp", "dr2_dcu", "dr2_sftp", "dr2_mftp", "dr2_mpos", "dr2_spos", "dr2_tpt", "hhpos_insp", "sa_tool"];
+      subs.forEach(s => {
+        const el = document.getElementById(`dr2sub-${s}`);
+        if (el) {
+          el.className = s === sub
+            ? "px-3 py-1.5 rounded-md text-xs font-semibold bg-royal text-white"
+            : "px-3 py-1.5 rounded-md text-xs font-medium bg-[#1B1B29] text-zinc-300 border border-white/10";
+        }
+      });
+      document.getElementById("deviceStuckPanel").classList.toggle("hidden", sub !== "device_stuck");
+      document.getElementById("dr2StagedBanner").classList.toggle("hidden", sub === "device_stuck");
+      if (sub !== "device_stuck") {
+        document.getElementById("stagedTitle").textContent = sub.replace("_", " ").toUpperCase();
       }
     }
 
-    function handleFiles(files) {
-      if (files.length > 0) {
-        document.getElementById('file-label').innerText = `${files.length} Excel file(s) staged for processing`;
-        showToast('FILES STAGED', `${files.length} input workbook(s) loaded into memory.`, 'info');
+    function renderQuickCommentButtons() {
+      const container = document.getElementById("quickCommentButtons");
+      container.innerHTML = QUICK_COMMENTS.map((text, idx) => `
+        <button type="button" onclick="applyQuickCommentToFocusedRow(${idx})"
+          class="text-left p-2.5 rounded-lg bg-[#0E0E16] hover:bg-purple-600/25 border border-white/10 hover:border-purple-400/60 text-xs text-zinc-100 transition">
+          ${escapeHtml(text)}
+        </button>
+      `).join("");
+    }
+
+    function applyQuickCommentToFocusedRow(commentIdx) {
+      if (activeCommentRowIdx === null || !currentRows[activeCommentRowIdx]) {
+        document.getElementById("fetchStatusText").textContent = "Click inside an empty Comments box first, then click a Quick Comment.";
+        return;
+      }
+      const chosen = QUICK_COMMENTS[commentIdx];
+      currentRows[activeCommentRowIdx].comments = chosen;
+      const inputEl = document.getElementById(`comment-input-${activeCommentRowIdx}`);
+      if (inputEl) {
+        inputEl.value = chosen;
+        inputEl.focus();
       }
     }
 
-    function generateValues() {
-      showToast('REPORT GENERATED', 'SLA metrics, P1-P3 buckets, and MTTR values computed.', 'info');
+    function buildSotiUrl(deviceName, env) {
+      const dev = (deviceName || "").trim().toUpperCase();
+      const terms = [dev];
+      const bftpMatch = dev.match(/^([A-Z0-9]+)_BFTP_([A-Z0-9]+)_(\d+)$/);
+      const dcuMatch = dev.match(/^([A-Z0-9]+)_DCU_([A-Z0-9]+)_(\d+)$/);
+      if (bftpMatch) terms.push(`${bftpMatch[1]}_DCU_${bftpMatch[2]}_1`);
+      else if (dcuMatch) terms.push(`${dcuMatch[1]}_BFTP_${dcuMatch[2]}_2`);
+
+      const query = " " + terms.map(t => `Text AlmostEqual "${t}"`).join(" OR ");
+      let base = "https://soti-mobicontrol.prestoprod.net";
+      if (env === "CTT") base = "https://soti-mobicontrol.prestoctt.net";
+      if (env === "Preprod") base = "https://soti-mobicontrol.prestopreprod.net";
+      return `${base}/MobiControl/WebConsole/home/devices?search=${encodeURIComponent(query)}&subGroups=true&count=250`;
     }
 
-    function resetValues() {
-      showToast('REFRESHED', 'Dashboard telemetry synchronized.', 'info');
+    async function fetchMailByTitle() {
+      const titleInput = document.getElementById("mailTitleInput").value.trim();
+      const statusEl = document.getElementById("fetchStatusText");
+      const btn = document.getElementById("btnFetchMail");
+
+      if (!titleInput) {
+        statusEl.textContent = "Paste mail subject or title first.";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Fetching...";
+      statusEl.textContent = "";
+
+      try {
+        const res = await fetch(`/api/dr2/device-stuck/fetch-mail?subject=${encodeURIComponent(titleInput)}`);
+        const data = await res.json();
+        statusEl.textContent = data.message || "";
+
+        if (data.found) {
+          fetchedEntryId = data.entry_id || "";
+          fetchedStoreId = data.store_id || "";
+          document.getElementById("emlSubject").value = data.subject || titleInput;
+          rowScreenshots.clear();
+          activeCommentRowIdx = null;
+          currentRows = (data.rows || []).map(r => ({
+            device_name: r.device_name,
+            android_device_status: r.android_device_status,
+            online_duration: r.online_duration,
+            comments: ""
+          }));
+          renderStuckTable();
+        }
+      } catch (err) {
+        statusEl.textContent = "Unable to connect to Outlook.";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Fetch";
+      }
     }
 
-    // Generate & Download internalreport.eml (Opens directly in Outlook as Compose Draft)
-    function downloadEML() {
-      const from = document.getElementById('mail-from').value;
-      const to = document.getElementById('mail-to').value;
-      const cc = document.getElementById('mail-cc').value;
-      const subject = document.getElementById('mail-subject').value;
-
-      const htmlBody = `<!DOCTYPE html>
-<html>
-<head>
-<style>
-  body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #1f2937; }
-  table { border-collapse: collapse; width: 420px; margin-bottom: 18px; font-size: 10pt; }
-  th { background-color: #70AD47; color: white; text-align: left; padding: 6px 10px; }
-  th.blue { background-color: #0070C0; }
-  td { padding: 5px 10px; border-bottom: 1px solid #e5e7eb; }
-  tr.total td { font-weight: bold; border-top: 1px solid #111; border-bottom: 2px solid #111; }
-  h3 { color: #111827; margin-top: 20px; margin-bottom: 6px; }
-</style>
-</head>
-<body>
-  <p>Hello all,</p>
-  <p>Below you will find the Monthly to date Internal SLA Report for TTC and 905. This report includes information for Class 1/Class 2 incidents since beginning of the month.</p>
-  <p>The tables below track manual v. automated effort and our adherence against the following SLAs: P1 incident resolution (SLA of &lt;3hrs) and P2 incident resolution (SLA of &lt;5hrs). "SLA Timer Paused" indicates incidents which have not yet been resolved.</p>
-
-  <h3>TTC — Total Incident Count</h3>
-  <table>
-    <tr><th>STATUS</th><th style="text-align:right">COUNT</th></tr>
-    <tr><td>Closed</td><td style="text-align:right">221</td></tr>
-    <tr><td>In Progress</td><td style="text-align:right">2</td></tr>
-    <tr><td>Moved to Class 2</td><td style="text-align:right">2</td></tr>
-    <tr><td>New</td><td style="text-align:right">5</td></tr>
-    <tr><td>On Hold</td><td style="text-align:right">7</td></tr>
-    <tr class="total"><td>Grand Total</td><td style="text-align:right">237</td></tr>
-  </table>
-
-  <h3>905 Transit Agencies — Total Incident Count</h3>
-  <table>
-    <tr><th>STATUS</th><th style="text-align:right">COUNT</th></tr>
-    <tr><td>Closed</td><td style="text-align:right">471</td></tr>
-    <tr><td>New</td><td style="text-align:right">4</td></tr>
-    <tr><td>On Hold</td><td style="text-align:right">13</td></tr>
-    <tr class="total"><td>Grand Total</td><td style="text-align:right">488</td></tr>
-  </table>
-
-  <p>Thanks &amp; Regards,<br/><strong>PCM.PRESTO</strong></p>
-</body>
-</html>`;
-
-      const emlContent = [
-        `From: ${from}`,
-        `To: ${to}`,
-        `Cc: ${cc}`,
-        `Subject: ${subject}`,
-        `X-Unsent: 1`,
-        `Content-Type: text/html; charset=utf-8`,
-        ``,
-        htmlBody
-      ].join('\r\n');
-
-      const blob = new Blob([emlContent], { type: 'message/rfc822' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'internalreport.eml';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      showToast('OUTLOOK DRAFT READY', 'internalreport.eml downloaded — click to open in Outlook.', 'info');
+    function loadSampleRows() {
+      fetchedEntryId = "";
+      fetchedStoreId = "";
+      rowScreenshots.clear();
+      activeCommentRowIdx = null;
+      const sampleTitle = "[External] Action Required - Devices Stuck in Status 4 or 5 - 20/11/2026 02:33:00";
+      document.getElementById("mailTitleInput").value = sampleTitle;
+      document.getElementById("emlSubject").value = sampleTitle;
+      currentRows = [
+        { device_name: "BRT_BFTP_1701_2", android_device_status: "4", online_duration: "0 Hour(s) 31 Minute(s)", comments: "" },
+        { device_name: "DRT_BFTP_6161_2", android_device_status: "4", online_duration: "4 Hour(s) 8 Minute(s)", comments: "" },
+        { device_name: "GO_BFTP_2593_2", android_device_status: "4", online_duration: "2 Hour(s) 33 Minute(s)", comments: "" }
+      ];
+      renderStuckTable();
     }
 
-    // Initialize MTTR Chart
-    const ctx = document.getElementById('mttrChart').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['MFTP', 'BFTP', 'SPOS', 'SFTP', 'DCU', 'AVM', 'TPT'],
-        datasets: [{
-          label: 'MTTR (Hours)',
-          data: [7.10, 1.22, 1.63, 1.47, 1.18, 0.0, 0.0],
-          backgroundColor: [
-            '#7C3AED', '#9333EA', '#A855F7', '#6D28D9', '#5B21B6', '#3B0764', '#3B0764'
-          ],
-          borderRadius: 6,
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false }
-        },
-        scales: {
-          y: {
-            grid: { color: 'rgba(255,255,255,0.06)' },
-            ticks: { color: '#9CA3AF', font: { family: 'JetBrains Mono', size: 10 } }
-          },
-          x: {
-            grid: { display: false },
-            ticks: { color: '#E5E7EB', font: { family: 'JetBrains Mono', size: 11 } }
-          }
+    function setRowScreenshot(rowIdx, file) {
+      if (!file) return;
+      const dev = currentRows[rowIdx]?.device_name || `Device_${rowIdx + 1}`;
+      rowScreenshots.set(rowIdx, {
+        file,
+        previewUrl: URL.createObjectURL(file),
+        deviceLabel: dev
+      });
+      renderStuckTable();
+    }
+
+    function handlePasteScreenshot(e, rowIdx) {
+      const items = e.clipboardData?.items || [];
+      for (const item of items) {
+        if (item.type && item.type.startsWith("image/")) {
+          e.preventDefault();
+          const file = item.getAsFile();
+          setRowScreenshot(rowIdx, file);
+          return;
         }
       }
+    }
+
+    function removeRowScreenshot(rowIdx) {
+      rowScreenshots.delete(rowIdx);
+      renderStuckTable();
+    }
+
+    function renderScreenshotCell(rowIdx) {
+      const shot = rowScreenshots.get(rowIdx);
+      if (shot) {
+        return `
+          <div class="space-y-1">
+            <img src="${shot.previewUrl}" alt="${escapeAttr(shot.deviceLabel)}" class="h-14 w-auto rounded border border-purple-400/50 object-contain bg-black" />
+            <button type="button" onclick="removeRowScreenshot(${rowIdx})" class="text-[11px] text-red-300 hover:underline">Remove</button>
+          </div>
+        `;
+      }
+      return `
+        <div class="space-y-1.5">
+          <div tabindex="0" onpaste="handlePasteScreenshot(event, ${rowIdx})"
+            class="paste-zone rounded border border-dashed border-purple-500/40 bg-[#0A0A10] px-2.5 py-2 text-[11px] text-zinc-400 cursor-pointer select-none">
+            Click &amp; Ctrl+V SS
+          </div>
+          <label class="inline-block text-[11px] text-purple-300 hover:text-white cursor-pointer underline">
+            or Upload
+            <input type="file" accept="image/png,image/jpeg,image/webp" class="hidden"
+              onchange="setRowScreenshot(${rowIdx}, this.files[0])" />
+          </label>
+        </div>
+      `;
+    }
+
+    function renderStuckTable() {
+      const tbody = document.getElementById("stuckTableBody");
+      const env = document.getElementById("sotiEnv").value;
+
+      if (!currentRows.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-zinc-400">Paste mail subject above and click <strong>Fetch</strong>.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = currentRows.map((row, idx) => {
+        const sotiUrl = buildSotiUrl(row.device_name, env);
+        const pairLabel = row.device_name.includes("_BFTP_")
+          ? `${row.device_name} + DCU`
+          : row.device_name;
+
+        return `
+          <tr>
+            <td class="p-2.5 font-mono font-semibold text-white">${escapeHtml(row.device_name)}</td>
+            <td class="p-2.5 text-center font-semibold text-white">${escapeHtml(row.android_device_status)}</td>
+            <td class="p-2.5 text-zinc-200">${escapeHtml(row.online_duration)}</td>
+            <td class="p-2.5">
+              <a href="${escapeAttr(sotiUrl)}" target="_blank" rel="noopener noreferrer"
+                 class="text-purple-300 hover:text-white underline text-xs font-medium">
+                Open SOTI (${escapeHtml(pairLabel)})
+              </a>
+            </td>
+            <td class="p-2.5">${renderScreenshotCell(idx)}</td>
+            <td class="p-2.5">
+              <input id="comment-input-${idx}" type="text" value="${escapeAttr(row.comments)}"
+                placeholder="Click here then click Quick Comment"
+                onfocus="activeCommentRowIdx = ${idx}"
+                oninput="currentRows[${idx}].comments = this.value"
+                class="w-full rounded bg-[#141420] border border-white/15 focus:border-purple-400 focus:outline-none px-2.5 py-2 text-xs text-white" />
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    async function generateMail() {
+      if (!currentRows.length) return;
+      const btn = document.getElementById("btnGenerateMail");
+      const statusEl = document.getElementById("generateStatusText");
+      btn.disabled = true;
+      btn.textContent = "Generating...";
+      statusEl.textContent = "";
+
+      try {
+        const formData = new FormData();
+        formData.append("sender", document.getElementById("emlFrom").value);
+        formData.append("to_addr", document.getElementById("emlTo").value);
+        formData.append("cc_addr", document.getElementById("emlCc").value);
+        formData.append("subject", document.getElementById("emlSubject").value);
+        formData.append("regards_name", document.getElementById("emlRegards").value);
+        formData.append("entry_id", fetchedEntryId);
+        formData.append("store_id", fetchedStoreId);
+        formData.append("rows_json", JSON.stringify(currentRows));
+
+        rowScreenshots.forEach((shot) => {
+          formData.append("screenshot_labels", shot.deviceLabel);
+          formData.append("screenshots", shot.file, `${shot.deviceLabel.replace(/[^A-Za-z0-9_-]/g, "_")}.png`);
+        });
+
+        const res = await fetch("/api/dr2/device-stuck/generate-mail", {
+          method: "POST",
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Failed to generate mail.");
+        statusEl.textContent = data.detail || "Draft opened in Outlook.";
+      } catch (err) {
+        statusEl.textContent = err.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Generate Mail";
+      }
+    }
+
+    function escapeHtml(v) {
+      return String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function escapeAttr(v) {
+      return escapeHtml(v).replace(/'/g, "&#39;");
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      renderQuickCommentButtons();
+      renderStuckTable();
     });
   </script>
 </body>
